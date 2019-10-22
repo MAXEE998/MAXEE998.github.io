@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title> IV Assignment I </title>
+		<!-- <script type="text/javascript" src="d3.js"></script> --> 
+		<script src="https://d3js.org/d3.v5.min.js"></script>
+		<!-- <link rel="stylesheet" href="index.css"> -->
+		<style>
+			.Asia {
+				color:#3D77AF;
+				fill:#3D77AF;
+			}
+			
+			.South_America {
+				color:#EEBD81;
+				fill:#EEBD81;
+			
+			}
+			
+			.Europe {
+				color:#B2C7E5;
+				fill:#B2C7E5;
+			}
+			
+			.Oceania {
+				color:#609D40;
+				fill:#609D40;
+			}
+			
+			.Africa {
+				color:#E3834A;
+				fill:#E3834A;
+			}
+			
+			.North_America {
+				color:#A8DC93;
+				fill:#A8DC93;
+			}
+			
+			svg circle {
+				stroke:black;
+			}
+			
+			text {
+				font-family:sans-serif;
+				font-size:11px;
+			}
+		</style>
+	</head>
+	<body>
+		<script type="text/javascript">
+
+			// Define dimension of the canvas
+			const w = 1000, h = 1000, padding = 100;
+			var r = 7, stroke = 1, scale = 1;
+			var xValue = "Birth Rate",
+				yValue = "Death Rate";
+
+			// Auxiliary function
+			function onlyUnique(value, index, self) { 
+  			  return self.indexOf(value) === index;
+			}
+			
+			var regions = [];
+
+			var rowConverter = function(d) {
+				var r = d.Region.trim().replace(' ', '_');
+				regions.push(r);
+				return {
+					Country: d.Country,
+					Region: r,
+					Population: +d.Population,
+					Area: +d.Area,
+					"Pop. Density (per sq. mi.)": +d["Pop. Density (per sq. mi.)"],
+					"Infant mortality": +d["Infant mortality"],
+					"GDP (per capita)": +d["GDP (per capita)"],
+					"Literacy Rate": +d["Literacy Rate"],
+					"Arable land (%)": +d["Arable land (%)"],
+					"Crops land (%)": +d["Crops land (%)"],
+					"Other land (%)": +d["Other land (%)"],
+					"Birth Rate": +d["Birth Rate"],
+					"Death Rate": +d["Death Rate"],
+					"Agriculture": +d["Agriculture"],
+					"Industry": +d["Industry"],
+					"Service": +d["Service"]
+				};
+			};
+
+			// Create the svg canvas
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+
+			// The draw function
+			var draw = (countries) => {
+				// Wash data
+				regions = regions.filter( onlyUnique );
+								
+				// Scales
+				var xScale = d3.scaleLinear()
+								.domain([0, d3.max(countries, d => d["Birth Rate"])])
+								.range([padding, w-padding-100]);
+
+				var yScale = d3.scaleLinear()
+								.domain([0, d3.max(countries,  d => d["Death Rate"])])
+								.range([h-padding, padding]);
+
+				// Zoom and Panning
+				var zoom = d3.zoom()
+							 .extent([[padding, padding],[w-padding, h-padding]])
+							 .scaleExtent([1, 10])
+							 .translateExtent([[padding, padding],[w-padding, h-padding]])
+							 .on("zoom", zoomed);
+				
+				function zoomed() {
+					d3.select(".xAxis").call(xAxis.scale(d3.event.transform.rescaleX(xScale)));
+					d3.select(".yAxis").call(yAxis.scale(d3.event.transform.rescaleY(yScale)));
+					d3.selectAll("circle").attr("transform",() => {
+						scale = d3.event.transform.k;
+						return d3.event.transform;
+					})
+					  .style("r", r/scale).style("stroke-width", stroke/scale);
+				}
+
+				function resetted() {
+					console.log("resetted");
+					svg.transition()
+						.duration(750)
+						.call(zoom.transform, d3.zoomIdentity);
+				}
+
+				svg.call(zoom);
+				
+				// Axes
+				var xAxis = d3.axisBottom(xScale)
+							  .ticks(5)
+							  .tickFormat(d3.format(".2%"));
+
+				var yAxis = d3.axisLeft(yScale)
+							  .ticks(5)
+							  .tickFormat(d3.format(".2%"));
+
+
+				// clip path
+				var points = `${padding},${h-padding} ${w-padding-92},${h-padding} ${w-padding-92},${padding-8} ${padding},${padding-8}`
+				console.log(points)
+				svg.append("clipPath")
+					.attr("id", "clip")
+					.append("polygon")
+					.attr("points", points)
+
+				// circles
+				var view = svg.append("g").attr("clip-path", "url(#clip)");
+				view.selectAll("circle")
+				   .data(countries)
+				   .enter()
+				   .append("circle")
+				   .attr("cx", d => xScale(d[xValue]))
+				   .attr("cy", d => yScale(d[yValue]))
+				   .style("r", r).style("stroke-width", stroke)
+				   .attr("class", (d) => {return d.Region})
+				   .on("mouseover", function() { d3.select(this).style("r", r*2/scale).style("stroke-width", stroke*2/scale); })
+				   .on("mouseout", function() {d3.select(this).style("r", r/scale).style("stroke-width", stroke/scale);})
+				   .append("title")
+				   .text((d) => {return d.Country.trim()});
+
+				// Bonus: Click to hide
+				svg.selectAll("circle")
+				   .on("click", function(d) {d3.select(this).attr("visibility", "hidden");});
+
+				// Axes and Axes' Lables
+				svg.append("g")
+					.attr("class", "xAxis")
+					.attr("transform", "translate(0," + (h - padding) + ")")
+					.call(xAxis)
+					.append("text")
+					.attr("class", "xlabel")             
+					.attr("x", w - padding - 100)
+					.attr("y", -1)
+					.attr("fill", "black")
+					.style("text-anchor", "end")
+					.text(xValue);
+
+				svg.append("g")
+				   .attr("class", "yAxis")
+				   .attr("transform", "translate(" + padding + ",0)")
+				   .call(yAxis)
+				   .append("text")
+				   .attr("class", "ylabel") 
+				   .attr("transform", "rotate(-90)")
+				   .attr("y", 15)
+				   .attr("x", -padding)
+				   .attr("fill", "black")
+      			   .style("text-anchor", "end")
+      		   	   .text(yValue);
+				
+				// Legends
+				regions.forEach((region, i) => {
+					svg.append("g")
+					   .attr("class", "legend")
+					   .attr("transform", "translate(" + (w-120) + "," + (13*i+padding) + ")")
+					   .call((g) => {
+					   		console.log(region, i);
+
+							g.append("rect")
+							 .attr("class", region)
+							 .attr("height", 10)
+							 .attr("width", 20);
+
+							g.append("text")
+							 .style("text-anchor", "begin")
+							 .attr("x", 25)
+							 .attr("y", 9)
+							 .text(region.replace("_", " "));
+						});
+				});
+
+				// Add selections
+				var Xselection = d3.select("body")
+								    .append("div")
+									.attr("id", "Xselection")
+									.style("width", "50%")
+									.style("float", "left");
+				
+				var Xspan = Xselection.append('span')
+									  .text('Select X Axis variable: ')
+									  .attr("fill", "black");
+									
+				var XorderSelect = Xselection.append('select')
+											 .attr('id', 'XorderSelect')
+											 .on("change", XchangeAttribute)
+											 .selectAll('option')
+											 .data(Object.getOwnPropertyNames(countries[0]).slice(2,)) 
+											 .enter()
+											 .append('option')
+											 .attr('value', d => d)
+											 .property("selected", d => d === "Birth Rate" )
+											 .text(d => d);
+				
+				var Yselection = d3.select("body")
+								   .append("div")
+								   .attr("id", "Yselection")
+								   .style("width", "50%")
+								   .style("float", "right");
+				
+				var Yspan = Yselection.append('span')
+									  .text('Select Y Axis variable: ')
+									  .attr("fill", "black");
+									
+				var YorderSelect = Yselection.append('select')
+											 .attr('id', 'YorderSelect')
+											 .on("change", YchangeAttribute)
+										     .selectAll('option')
+										     .data(Object.getOwnPropertyNames(countries[0]).slice(2,)) 
+											 .enter()
+										     .append('option')
+											 .attr('value', d => d)
+											 .property("selected", d => d === "Death Rate" )
+											 .text(d => d);
+				
+                function YchangeAttribute() {
+					resetted();
+                    yValue = this.value;
+					console.log(`Y axis is changed to: ${yValue}`);
+
+                    //update the yScale:
+	            	yScale.domain([0, d3.max(countries, d => d[yValue])]);
+                    //update the yAxis:
+					d3.select(".yAxis")
+					  .transition().duration(1500)
+					  .call(yAxis);
+					d3.select("text.ylabel").text(yValue);
+                	//update the circles:
+					d3.selectAll("circle")
+					  .transition().duration(1500)
+					  .attr("visibility", "visible")
+					  .attr("cy", (d) => {return yScale(d[yValue]);})
+				};
+				
+				function XchangeAttribute() {
+					resetted();
+                    xValue = this.value;
+					console.log(`X axis is changed to: ${xValue}`);
+
+                    //update the xScale:
+	            	xScale.domain([0, d3.max(countries, d => d[xValue])]);
+                    //update the xAxis:
+					d3.select(".xAxis")
+					  .transition().duration(1500)
+					  .call(xAxis);
+					d3.select("text.xlabel").text(xValue);
+                	//update the circles:
+					d3.selectAll("circle")
+					  .transition().duration(1500)
+					  .attr("visibility", "visible")
+					  .attr("cx", (d) => {return xScale(d[xValue]);})
+                };
+				
+			};
+			
+			// Load the data and then draw
+			d3.csv("countries_of_world.csv", rowConverter)
+			  .then(draw);
+
+		</script>
+	</body>
+</html>
+
