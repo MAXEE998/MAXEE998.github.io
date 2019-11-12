@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title> Assignment 3</title>
+    <style>
+        .links line {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+
+        .nodes circle {
+            stroke: #fff;
+            stroke-width: 1.5px;
+        }
+    </style>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+    <script>
+        /*set up canvas size and variables*/
+        var margin = { top: 50, right: 50, bottom: 50, left: 50 },
+            width = 600,
+            height = 600;
+        var iteration = 1000;
+        var minimal_disp = 70;
+        var node, nodes, link, links, k = 0.1*width, t = 0.004*width;
+
+        var color = d3.scale.category10()
+
+        var svg = d3.select("body")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + (margin.left) + "," + (margin.top) + ")");
+
+        function initialization(n) {
+            /*This function initializes the positions of each node,
+                n: a node 
+            It inserts .x , .y and .disp to the node
+            Here is a example.*/
+            n.x = Math.random() * width/2 + 100; // Positions are randomly generated
+            n.y = Math.random() * height/2 + 100;
+            n.disp = [0, 0];
+            return n;
+        };
+
+        /*Fruchterman-Reingold algorithm*/
+        function FruchtermanReingold(lag=1000, iter=iteration, easing="elastic") {
+                for (var i = 0; i < iter; i++) {
+                    nodes.forEach(function (d) {
+                        d.disp = [0, 0];
+                    });
+                    //the displacement by repulsive force
+                    nodes.forEach(function (d) {
+                        calculateDispByRepulsive(d);
+                    });
+                    //the displacement by attractive force
+                    links.forEach(function (d) {
+                        calculateDispByAttractive(d);
+                    });
+                    //update the position of each node
+                    nodes.forEach(function (d) {
+                        updatePosition(d);
+                    });
+                    // cool down (simulated annealing)
+                    cool();
+                };
+                    /*update the drawing of nodes and linkes*/
+                    node.transition()
+                        .ease(easing)
+                        .duration(lag)
+                        .attr("cx", function (d) {
+                            return d.x;
+                        })
+                        .attr("cy", function (d) {
+                            return d.y;
+                        })
+                        .style("fill", function (d) {
+                            return color(d.group);
+                        });
+
+                    link.transition()
+                        .ease(easing)
+                        .duration(lag)
+                        .attr("x1", function (d) { return nodes[obtainNodeIndex(d.source)].x; })
+                        .attr("y1", function (d) { return nodes[obtainNodeIndex(d.source)].y; })
+                        .attr("x2", function (d) { return nodes[obtainNodeIndex(d.target)].x; })
+                        .attr("y2", function (d) { return nodes[obtainNodeIndex(d.target)].y; });
+                    
+                    console.log("Updated");
+            };
+
+        function calculateDelta(n1, n2) {
+            /*This function calculate the Delta (i.e., the distance) between two nodes
+                n1: node 1
+                n2: node 2
+            It returns a 2d array.*/
+            return [n1.x - n2.x, n1.y - n2.y];
+        };
+
+        function norm2D(n) {
+            /*This function returns the l2 norm of the a 2d vector.*/
+            return Math.sqrt(n[0] * n[0] + n[1] * n[1]);
+        };
+
+        function repulsiveForce(deltaNorm) {
+            /*Calculating the repulsive force*/
+            /*This function returns the repulsize force. 
+            Please complete this function*/
+           return Math.pow(k, 2) / deltaNorm;
+        };
+
+        function attractiveForce(deltaNorm) {
+            /*Calculating the attractive force
+            Please complete this function*/
+            return Math.pow(deltaNorm, 2) / k;
+        };
+
+
+        function calculateDispByRepulsive(v) {
+            /*This function calculates the displacement according to the repulsive force.*/
+            for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].id != v.id) {
+                    var delta = calculateDelta(v, nodes[i]);
+                    var delta_norm = norm2D(delta);
+                    if (delta_norm != 0) {
+                       /*calculate the displacement of repulsive force here*/
+                       var f = repulsiveForce(delta_norm);
+                       v.disp[0] += (delta[0] / delta_norm) * f;
+                       v.disp[1] += (delta[1] / delta_norm) * f;
+                    };
+                };
+            };
+        };
+
+        function obtainNodeIndex(name) {
+            /*Given the name of a node, this function return the index of it.
+            Complete the function. Hint: using nodes.map().filter()*/
+            return nodes.filter(d => d.id == name)[0].index;
+        };
+
+        function calculateDispByAttractive(edge) {
+            /*This function calculates the displacement according to the attractive force.
+            Write the function obtainNodeIndex() which returns 
+            the index of the edge.source in nodes*/
+            var sourceIdx = obtainNodeIndex(edge.source);
+            var targetIdx = obtainNodeIndex(edge.target);
+            var delta = calculateDelta(nodes[sourceIdx], nodes[targetIdx]);
+            var delta_norm = norm2D(delta);
+            if (delta_norm != 0) {
+                /*calculat the displacement of attraction force
+                complete the function*/
+               var f = attractiveForce(delta_norm);
+               nodes[sourceIdx].disp[0] -= (delta[0] / delta_norm) * f;
+               nodes[sourceIdx].disp[1] -= (delta[1] / delta_norm) * f;
+               nodes[targetIdx].disp[0] += (delta[0] / delta_norm) * f;
+               nodes[targetIdx].disp[1] += (delta[1] / delta_norm) * f;
+            };
+        };
+
+        function updatePosition(n) {
+            /*This function updates the position x, y of a node.*/
+            var disp = norm2D(n.disp);/*norm2D is a function that returns the norm of a 2d vector.*/
+            if (disp >= minimal_disp){
+            /*update the n.x and n.y. Refer to the pseudocode in the slides,
+            complete the function. You can refer to the Python code or 
+            other methods that you would like to try.*/
+                n.x += (n.disp[0] / disp) * Math.min(disp, t);
+                n.y += (n.disp[1] / disp) * Math.min(disp, t);
+                n.x = Math.min(width, Math.max(0, n.x));
+                n.y = Math.min(height, Math.max(0, n.y));
+            };
+        };
+
+        function cool() {
+            /*This function control the decreasing of the temperature.
+            Here is a example of using linear decreasing. 
+            (Note: The initial value of t effects the results significantly, so you can
+            try differnt t to find a better result.)*/
+            t -= t / (iteration + 1);
+        };
+
+        /*--dragging--*/
+        var drag = d3.behavior.drag()
+            .on("dragstart", dragstart)
+            .on("drag", dragged)
+            .on("dragend", dragend);
+        
+        function dragstart(d) {
+            d3.event.sourceEvent.stopPropagation();
+        };
+
+        /*Complete them by referring to the link provided in the assignment*/
+        function dragged(d) {
+            d.x = d3.event.x, d.y = d3.event.y;
+            d3.select(this).attr("cx", d.x).attr("cy", d.y);
+            link.filter(function(l) { return l.source === d.id; }).attr("x1", d.x).attr("y1", d.y);
+            link.filter(function(l) { return l.target === d.id; }).attr("x2", d.x).attr("y2", d.y);
+        };
+
+        function dragend(d) {
+            /*Hint: when you update the links and nodes, 
+            you can add .transition().ease("elastic") to make the updating vivid.*/
+            t = width*0.1
+            FruchtermanReingold();
+        };
+
+        /*drawing the layout*/
+        d3.json("data.json", function (error, rawData) {
+            if (error) throw error;
+            /*loading the data, setting up parameters*/
+            nodes = rawData["nodes"].map(initialization).map((d, i) => {d["index"] = i; return d;});
+            links = rawData["links"];
+            // you can change the k to see what happens to the layout 
+            k = Math.sqrt(width * height /5/nodes.length); 
+
+            /*generating links and nodes*/
+            link = svg.append("g")
+                .attr("class", "links")
+                .selectAll("line")
+                .data(links)
+                .enter().append("line")
+                .attr("stroke-width", function (d) { return Math.sqrt(d.value); });
+
+            link.attr("x1", function (d) { return nodes[obtainNodeIndex(d.source)].x; })
+                .attr("y1", function (d) { return nodes[obtainNodeIndex(d.source)].y; })
+                .attr("x2", function (d) { return nodes[obtainNodeIndex(d.target)].x; })
+                .attr("y2", function (d) { return nodes[obtainNodeIndex(d.target)].y; });
+
+            node = svg.selectAll("circle")
+                .data(nodes)
+                .enter()
+                .append("circle")
+                    .attr("class", function (d, i) {
+                        return "node" + i;
+                    })
+                    .style("fill", function (d) {
+                        return color(d.group);
+                    })
+ 
+            node.append("title").text(d => d.id);
+
+            node.attr("cx", function (d) {
+                return d.x;
+            })
+                .attr("cy", function (d) {
+                    return d.y;
+                })
+                .attr("r", 8);
+
+            /*run the layout*/
+            let i = 0;
+            var T = 1;
+            const animate = async () => {
+                if (i < 300) {
+                    FruchtermanReingold(T, 1, "linear");
+                    await new Promise(rsv => setTimeout(rsv, T));
+                    requestAnimationFrame(animate);
+                    i += 1;
+                }
+            }
+            requestAnimationFrame(animate);
+
+            node.call(drag); //Comment out this line if you didn't finish the drag parts
+           
+        });
+
+    </script>
+
+</body>
+
+</html>
