@@ -1,0 +1,65 @@
+#maincontainer 
+{   
+top:0px;
+padding-top:0;
+margin:auto; position:relative;
+width:1800px;
+height:100%;
+}
+
+#category_graph,
+#main_graph,
+#time_series_graph {
+    display: inline-block;
+
+}
+
+#category_graph,
+#time_series_graph {
+    transform: translate(34%, -50%);
+
+}
+
+#main_graph {
+    transform: translate(10%, 0);
+}
+
+
+div {
+    border-width: 1px;
+    border-style: solid;
+}
+
+h1,h2 {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    position: relative;
+    text-align: center;
+
+}
+
+.bar {
+    fill: skyblue;
+}
+
+.dot {
+    stroke: black;
+    stroke-width: 1; 
+    fill: red;
+}
+
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5;
+}
+#SelectionNode{
+    font-size:29px;
+}
+#currentSelection{
+    color: blue;
+}
+
+#restore{
+    position:static;
+    font-size:20px;
+}
