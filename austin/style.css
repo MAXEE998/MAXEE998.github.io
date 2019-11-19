@@ -3,30 +3,49 @@
 top:0px;
 padding-top:0;
 margin:auto; position:relative;
-min-width:2000px;
-max-width:2000px;
+min-width:2100px;
+max-width:2100px;
 }
 
 #main_graph,
 #sub_graphs {
     display: inline-block;
-    border-width: 1px;
     position: absolute;
     top:0px;
-    border-style: solid;
     height:879px;
 }
 
+#sub_graphs {
+    border-right: 1px solid;
+}
+
 #main_graph {
+    border-style: solid;
     min-width:1600px;
     max-width:1600px;
+    border-radius: 20px;
+}
+
+#main_graph svg {
+    position: absolute;
+}
+
+svg#legend {
+    width: 600px;
+    height: 70px;
+    top: 800px;
+    left: 450px;
+}
+
+svg#map {
+    top: 5px;
+    left: 826px;
 }
 
 h1,h2,h3,a, text {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     position: relative;
     text-align: center;
-
 }
 
 h1{
@@ -50,8 +69,9 @@ h1{
 }
 
 #SelectionNode{
-    position: relative;
-    left: 400px;
+    position: absolute;
+    left: 450px;
+    top: 60px;
     font-size: 28px;
 }
 
@@ -60,9 +80,9 @@ h1{
 }
 
 #restore{
-    position:relative;
+    position: absolute;
     left:700px;
-    top :760px;
+    top :750px;
     font-size:20px;
     cursor: pointer;
     color: #fff;
@@ -87,7 +107,7 @@ h1{
     padding-bottom:20px;
     padding-right: 15px;
     padding-left: 20px;
-    width:210px;
+    width:260px;
     text-align: left;
     font-size: 18px;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
