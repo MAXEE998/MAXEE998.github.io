@@ -21,6 +21,15 @@
                     target="_blank">Austin</a>
                 <button id="restore" type="button">Restore</button>
             </span>
+            <img id = "manual_icon" src="https://icon-library.net//images/user-manual-icon/user-manual-icon-8.jpg">
+            <div id = "functionality_discription">
+                <h4>Click on Regions to Explore regional features </h4>
+                <h4>Click Restore for Austin Infor as a whole</h4>
+                <h4>Hover over Regions to explore detailed infor </h4>
+                <h4>Click on Regions to Explore crime category, seasonailty pattern</h4>
+                <h4>Zoom & Pan on map to inspect certain regions </h4>
+                <h4>Click on Zip Zone for Reigional Specifics</h4>
+            </div>
         </div>
         <div id="sub_graphs">
 
@@ -33,11 +42,24 @@
             </div>
         </div>
     </div>
+    <!-- the manual discription when click -->
+    <script>
+        document.getElementById("manual_icon").onmouseover = manual_enable;
+        document.getElementById("manual_icon").onmouseout = manual_disable;
+        function manual_disable(){
+            document.getElementById("functionality_discription").style.opacity = 0;
 
+        }
+        function manual_enable(){
+            document.getElementById("functionality_discription").style.opacity = 1;
+
+        }
+    </script>
+    
     <script>
         // Main view dimension {MARKER}
-        const main_height = 750;
-        const main_width = 750;
+        const main_height = 850;
+        const main_width = 850;
         const main_margin = {
             "top": 10,
             "bottom": 10,
@@ -47,7 +69,7 @@
 
         // Sub view dimension
         const sec_height = 350;
-        const sec_width = 350;
+        const sec_width = 380;
         const sec_margin = {
             "top": 12,
             "bottom": 12,
@@ -59,11 +81,9 @@
             .attr("width", sec_width + sec_margin.left + sec_margin.right)
             .attr("height", sec_height + sec_margin.top + sec_margin.bottom);
         var main_legend = d3.select("#main_graph").append("svg")
-            .attr("transform", "translate(0,800)")
-            .attr("width", 600)
-            .attr("height", 70);
+            .attr("id", "legend");
         var main = d3.select("#main_graph").append("svg")
-            .attr("transform", "translate(750,-80)")
+            .attr("id", "map")
             .attr("width", main_width + main_margin.left + main_margin.right)
             .attr("height", main_height + main_margin.top + main_margin.bottom);
         var time_graph = d3.select("#time_series_graph").append("svg")
@@ -74,7 +94,7 @@
         // var index_note = ["Little Crimes", "Some Crimes", "Many Crimes", "Lots of Crimes"];
         var color = d3.scaleQuantize().range(color_range);
         // color changed when selected
-        var selected = function (d) {
+        var mainSelected = function (d) {
             d3.select(this).style("stroke", "yellow").style("stroke-width", "3");
             // mouseover with the tooltip action
             div_tooltip.transition()
@@ -85,15 +105,15 @@
             "Number of cases: " + (d.properties.caseNum).toString() + "</br>" +
             "Clearance Rate: " + (parseFloat(d.properties.clearRate * 100).toFixed(2) + "%")
             .toString() + "</br>" +
-            "Clearance Time: " + ((d.properties.clearTime) ? (d.properties.clearTime.toFixed(2)).toString() + " Days" :
+            "AVG Clearance Time: " + ((d.properties.clearTime) ? (d.properties.clearTime.toFixed(2)).toString() + " Days" :
             "N/A") + "</br>";
             var xPosition = d3.mouse(this)[0] - 5;
             var yPosition = d3.mouse(this)[1] - 5;
             div_tooltip.html(html)
-            .style("left", (d3.event.pageX) + "px")
-            .style("top", (d3.event.pageY - 28) + "px");
+            .style("left", (d3.event.pageX+20) + "px")
+            .style("top", (d3.event.pageY - 20) + "px");
         };
-        var restored = function (d) {
+        var mainRestored = function (d) {
             d3.select(this).style("stroke-width", "0");
             div_tooltip.transition()
             .duration(500)
@@ -108,16 +128,10 @@
         // define draw_legend
         function draw_legend() {
             // draw the color legend
-            main_legend.append("rect")
-                .attr("x", 20)
-                .attr("y", 25)
-                .attr("width", 60)
-                .attr("height", 25)
-                .style("fill", "#ccc");
             main_legend.append("text")
-                .attr("x", 0)
+                .attr("x", 35)
                 .attr("y", 20)
-                .text("No Crime")
+                .text("Least Crimes")
                 .attr("font-size", "20");
             main_legend.append("text")
                 .attr("x", 480)
@@ -169,7 +183,7 @@
             // Draw yAxis
             cat_graph.append("g")
                 .attr("class", "y axis")
-                .attr("transform", "translate(" + (sec_margin.left + 10) + "," + 0 + ")")
+                .attr("transform", "translate(" + (sec_margin.left + 20) + "," + 0 + ")")
                 .call(yAxis);
             // Define bars
             var bars = barChart()
@@ -301,8 +315,8 @@
                 .attr("class", "highLight")
                 .attr("stoke-width", 0)
                 .style("fill-opacity", 0)
-                .on("mouseover", selected)
-                .on("mouseout", restored);
+                .on("mouseover", mainSelected)
+                .on("mouseout", mainRestored);
 
             main.call(zoom);
             return resetted;
@@ -375,9 +389,6 @@
             data.setRawData(d);
             var saftyIdx = Object.values(data.getAllSafetyIdx());
             color.domain([Math.min.apply(null, saftyIdx), Math.max.apply(null, saftyIdx)]);
-            // get all attrbute for each zip section
-
-
             d3.json("Boundaries_Zip.geojson", function (json) {
                 draw(data, json);
             });

@@ -3,30 +3,55 @@
 top:0px;
 padding-top:0;
 margin:auto; position:relative;
-min-width:2000px;
-max-width:2000px;
+min-width:2100px;
+max-width:2100px;
 }
 
 #main_graph,
 #sub_graphs {
     display: inline-block;
-    border-width: 1px;
     position: absolute;
     top:0px;
-    border-style: solid;
     height:879px;
 }
 
+#sub_graphs {
+    top:3px;
+}
+
+#sub_graphs {
+    border-right: 1px solid;
+}
+
 #main_graph {
-    min-width:1600px;
-    max-width:1600px;
+    border-style: solid;
+    min-width:1900px;
+    max-width:1900px;
+    border-radius: 20px;
+}
+
+#main_graph svg {
+    position: absolute;
+}
+
+svg#legend {
+    width: 600px;
+    height: 70px;
+    top: 800px;
+    left: 1259px;
+}
+
+svg#map {
+    top: 4px;
+    left: 420px;
+    border-radius: 20px;
+    border-width: 3px;
 }
 
 h1,h2,h3,a, text {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     position: relative;
     text-align: center;
-
 }
 
 h1{
@@ -50,8 +75,9 @@ h1{
 }
 
 #SelectionNode{
-    position: relative;
-    left: 400px;
+    position: absolute;
+    left: 1360px;
+    top: 60px;
     font-size: 28px;
 }
 
@@ -60,9 +86,9 @@ h1{
 }
 
 #restore{
-    position:relative;
-    left:700px;
-    top :760px;
+    position: absolute;
+    left:420px;
+    top :0px;
     font-size:20px;
     cursor: pointer;
     color: #fff;
@@ -87,10 +113,30 @@ h1{
     padding-bottom:20px;
     padding-right: 15px;
     padding-left: 20px;
-    width:210px;
+    width:260px;
     text-align: left;
     font-size: 18px;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     position: absolute;
+}
+#manual_icon{
+    width:80px;
+    height: 80px;
+    position:relative;
+    left: 1600px;
+    top: 450px;
+}
+#functionality_discription{
+    opacity:0;
+    width: 460px;
+    padding-top:20px;
+    padding-bottom:20px;
+    padding-right: 5px;
+    padding-left: 20px;
+    position:relative;
+    left:1400px;
+    top:20px;
+    background-color:lightsteelblue;
+    border-radius: 8px;
 }
 
