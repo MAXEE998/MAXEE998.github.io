@@ -89,9 +89,8 @@ function* iterate() {
 
         d3.select("#logList").append("li").lower()
           .attr("class", violation ? "list-group-item list-group-item-danger" : (overEat ? "list-group-item list-group-item-warning" : "list-group-item"))
-          .node().innerHTML = `<strong>Time = ${t}:</strong> ${input[t]}`;
+          .node().innerHTML = `<strong>Time = ${t+1}:</strong> ${input[t++]}`;
         
-        t++;
         d3.select("#timer").text(`Current Time: ${t} / ${input.length}`);
         yield;
     }
